@@ -27,11 +27,12 @@ class Tardis(pygame.sprite.Sprite):
             
 class Trumpet(pygame.sprite.Sprite):
     image = pygame.image.load('Enemy/Trubka/standing/1.png')
+    playing = 0
     def __init__(self, location, *groups):
         super(Trumpet, self).__init__(*groups)
         self.some_counting = 0
         self.rect = pygame.rect.Rect(location, self.image.get_size())
-        #self.sound = pygame.mixer.Sound('cat.wav')
+        self.sound = pygame.mixer.Sound('trumpet.wav')
         
         self.imageSt = []
         self.imagePl = []
@@ -42,6 +43,9 @@ class Trumpet(pygame.sprite.Sprite):
         
     
     def update(self, dt, game):
+        if self.playing > 0:
+            self.playing -=1
+            
         if self.rect.colliderect(game.player.rect.move(96,0)):
             if game.player.fighting == True:
                 self.some_counting = 40 #time of the effect
@@ -49,7 +53,9 @@ class Trumpet(pygame.sprite.Sprite):
         if self.some_counting > 1:
             self.some_counting -=1
             self.cooldown = 1
-            #self.sound.play()
+            if self.playing == 0:
+                self.sound.play()
+                self.playing = int(self.sound.get_length()*30)
             self.image = self.imagePl[game.ani_state]
         else:
             self.image = self.imageSt[game.ani_state]
@@ -57,11 +63,12 @@ class Trumpet(pygame.sprite.Sprite):
 
 class Drum(pygame.sprite.Sprite):
     image = pygame.image.load('Enemy/Drum/standing/1.png')
+    playing = 0
     def __init__(self, location, *groups):
         super(Drum, self).__init__(*groups)
         self.some_counting = 0
         self.rect = pygame.rect.Rect(location, self.image.get_size())
-        #self.sound = pygame.mixer.Sound('cat.wav')
+        self.sound = pygame.mixer.Sound('drum.wav')
         
         self.imageSt = []
         self.imagePl = []
@@ -71,6 +78,9 @@ class Drum(pygame.sprite.Sprite):
             self.imagePl.append(pygame.image.load('Enemy/Drum/playing/'+str(i+1)+'.png'))
         
     def update(self, dt, game):
+        if self.playing > 0:
+            self.playing -=1
+            
         if self.rect.colliderect(game.player.rect.move(96,0)):
             if game.player.fighting == True:
                 self.some_counting = 40 #time of the effect
@@ -78,7 +88,9 @@ class Drum(pygame.sprite.Sprite):
         if self.some_counting > 1:
             self.some_counting -=1
             self.cooldown = 1
-            #self.sound.play()
+            if self.playing == 0:
+                self.sound.play()
+                self.playing = int(self.sound.get_length()*30)
             self.image = self.imagePl[game.ani_state]
         else:
             self.image = self.imageSt[game.ani_state]
