@@ -5,13 +5,113 @@ from cv2 import cv
 from Camera import Camera;
 import numpy
 
+class Moves (object):
+    
+    STAND = 0
+    M_STAND = [
+          [0,0,2,0,0],
+          [0,1,1,1,0],
+          [0,0,1,0,0],
+          [0,1,1,1,0],
+          [0,0,2,0,0]
+          ]
+    
+    UP = 1
+    M_UP = [
+          [0,0,0,0,0],
+          [0,0,0,0,0],
+          [0,0,0,0,0],
+          [0,2,2,2,0],
+          [0,2,1,2,0]
+          ]
+
+    LEFT = 2
+    M_LEFT = [
+          [0,0,0,2,0],
+          [0,0,2,2,2],
+          [0,0,2,1,2],
+          [0,0,2,1,2],
+          [0,0,2,1,2]
+          ]
+    
+    RIGHT = 3
+    M_RIGHT = [
+          [0,2,0,0,0],
+          [2,2,2,0,0],
+          [2,1,2,0,0],
+          [2,1,2,0,0],
+          [2,1,2,0,0]
+          ]
+    
+    ATTACK_L = 4
+    M_ATTACK_L = [
+          [0,0,2,0,0],
+          [0,0,2,2,0],
+          [0,0,1,1,2],
+          [0,0,1,2,0],
+          [0,0,1,0,0]
+          ]
+    
+    ATTACK_R = 5
+    M_ATTACK_R = [
+          [0,0,2,0,0],
+          [0,2,2,0,0],
+          [2,1,1,0,0],
+          [0,2,1,0,0],
+          [0,0,1,0,0]
+          ]
+    
+    SPELL = 6
+    M_SPELL = [
+          [2,2,2,2,2],
+          [2,1,1,1,2],
+          [0,0,1,0,0],
+          [0,0,1,0,0],
+          [0,0,2,0,0]
+          ]
+    
+    
+    def getMove(self,mat):
+        movesTable = [True,True,True,True,True,True,True]
+        #print mat
+        for x in range(len(mat)):
+            for y in range(len(mat)):
+                
+                if self.M_STAND[x][y] != mat[y][x] and self.M_STAND[x][y] != 2:
+                    movesTable[self.STAND] = False
+                    
+                if self.M_UP[x][y] != mat[y][x] and self.M_UP[x][y] != 2:
+                    movesTable[self.UP] = False
+                    
+                if self.M_LEFT[x][y] != mat[y][x] and self.M_LEFT[x][y] != 2:
+                    movesTable[self.LEFT] = False
+                    
+                if self.M_RIGHT[x][y] != mat[y][x] and self.M_RIGHT[x][y] != 2:
+                    movesTable[self.RIGHT] = False
+                    
+                if self.M_ATTACK_L[x][y] != mat[y][x] and self.M_ATTACK_L[x][y] != 2:
+                    movesTable[self.ATTACK_L] = False
+                    
+                if self.M_ATTACK_R[x][y] != mat[y][x] and self.M_ATTACK_R[x][y] != 2:
+                    movesTable[self.ATTACK_R] = False
+                    
+                if self.M_SPELL[x][y] != mat[y][x] and self.M_SPELL[x][y] != 2:
+                    movesTable[self.SPELL] = False
+
+        "Now look for what move it is"
+        for i in range(len(movesTable)):
+            if movesTable[i]:
+                return i;
+        "If no move was found..."
+        #return self.UNKNOWN
+    
 class CamControl(object):
     font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1, 1, 0, 3, 8) 
         
     cv.NamedWindow("Detection", cv.CV_WINDOW_AUTOSIZE)
     cv.NamedWindow("Matrix", cv.CV_WINDOW_AUTOSIZE)
     
-    matrix_size = 7;
+    matrix_size = 5;
     cam = Camera(matrix_size);
     
     
@@ -33,8 +133,6 @@ class CamControl(object):
         diff = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 3)
         result = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
         
-        #imgHSV = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U,3)
-        #cv.CvtColor(frame, imgHSV, cv.CV_BGR2HSV)
         
         cv.AbsDiff(frame, self.cam.frameCalibrationSynced,diff)
         
@@ -44,6 +142,7 @@ class CamControl(object):
     
     def run(self):
         self.cam.calibrate();
+        moves = Moves()
         i = 0;
         while True:
             frame = self._repeat()
@@ -65,6 +164,23 @@ class CamControl(object):
             if i == 4:
                 self.cam.calibrate();
                 print (".")
+            
+            "Test moves"
+            mv = moves.getMove(self.matrixObjects)
+            if mv == moves.UNKNOWN:
+                print "UNKNOWN!"
+            elif mv == moves.LEFT:
+                print "LEFT"
+            elif mv == moves.RIGHT:
+                print "RIGHT"
+            elif mv == moves.ATTACK_L:
+                print "ATTACK LEFT"
+            elif mv == moves.ATTACK_R:
+                print "ATTACK RIGHT"
+            elif mv == moves.UP:
+                print "UP"
+            elif mv == moves.SPELL:
+                print "SPELL"
             
     
     """
@@ -138,7 +254,7 @@ class CamControl(object):
                 elif self.showValueType == self.FILTERED:
                     value = str(self.cam.matrixFiltered [x][y])
                 elif self.showValueType == self.OBJECTS:
-                    value = self.matrixObjects [x][y]
+                    value = "#" if self.matrixObjects [x][y] else ""
                     
                     
                 cv.PutText(
@@ -171,10 +287,10 @@ class CamControl(object):
             for y in range(self.matrix_size):
                 #print matrix[x][y]
                 if matrix[x][y] >0 :
-                    self.matrixObjects[x][y] = "#"
+                    self.matrixObjects[x][y] = True
                     #print "object on ",x,", ",y
                 else:
-                    self.matrixObjects[x][y] = ""
+                    self.matrixObjects[x][y] = False
                 
                 
         
