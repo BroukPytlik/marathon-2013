@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="64" height="17" tilewidth="64" tileheight="64">
+ <tileset firstgid="1" source="triggers.tsx"/>
+ <tileset firstgid="33" name="stuff" tilewidth="64" tileheight="64">
+  <image source="stuff.png" width="192" height="256"/>
+ </tileset>
+ <tileset firstgid="45" name="stuff2" tilewidth="64" tileheight="64">
+  <image source="stuff2.png" width="192" height="448"/>
+ </tileset>
+ <layer name="set" width="64" height="17">
+  <data encoding="base64" compression="zlib">
+   eJztlgsOgjAQRPcCHkX8FRIVtb3/pdxGGpt1W6Q/IHSSF2gp25mwEBoAaDbOVrWG/FfkRrgnqj1X/pyZpigk/1K8c5rqbQ39n1O584f2Sqkeq8+/5q/5y0oiAmmHc1l4f1tj+V/w8aqPElEDMeqRh8Uzsl6MxvJTr3P63cPvf/shsmbq/t8lrFVCOd7/jhnTuaXI5L84aJk5QcbSs7azoDUFfL9/kqlJ6+qxYvY3KOJRMfPUo8l/cnD0XHNxDrjHR4iHf9HZ3//bOUk=
+  </data>
+ </layer>
+ <layer name="triggers" width="64" height="17" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjYGBgEBmhWAiIhRlGLhj1/6j/R/0/csGo/0f9P+r/gQEcA2QvMsDnfzk0vgweuaEKBiL+xYCYBwmL0tl+ZEDI/+huxeZeado4jSy3kApGyz/q+18Kjc8JxIxUtoNagNbxzwmlB2saE4LSgiMUgwAAWNYM9A==
+  </data>
+ </layer>
+</map>
