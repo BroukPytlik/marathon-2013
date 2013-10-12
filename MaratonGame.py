@@ -1,9 +1,10 @@
 #Hra o tom, jak odporny kralik skladal hudbu
 
-import pygame, tmx, glob, spell,time
+import pygame, tmx, glob,time
 from CamControl import CamControl,Moves 
 from multiprocessing import Process, Pipe
 from spell import Spell
+from timer import Timer
 
 
 
@@ -315,13 +316,16 @@ class Game(object):
         self.camera_p = Process(target=_startCamera, args=(camera_child_conn,))
         "start it"
         self.camera_p.start()
-    
+        
+    #@profile
     def main(self, screen):
         clock = pygame.time.Clock()
 
         while 1:
-            dt = clock.tick(30)
             
+            
+            dt = clock.tick(30)
+        
             self.some_counting_of_desired_delay_in_bunneeeehs_animation +=1
             if self.some_counting_of_desired_delay_in_bunneeeehs_animation > self.ani_speed_init:
                 self.some_counting_of_desired_delay_in_bunneeeehs_animation = 0
@@ -330,12 +334,13 @@ class Game(object):
                     self.ani_state=0
                     
                     
-                self.camera_conn.send(("GET",["MOVE"])) # honzovo      
-                if self.camera_conn.poll():    
-                    recReply = self.camera_conn.recv()
-                    self.reply = recReply [0]
-                    if self.reply != "":
-                        print time.time()," - ",self.reply
+            self.camera_conn.send(("GET",["MOVE"])) # honzovo      
+            if self.camera_conn.poll():    
+                recReply = self.camera_conn.recv()
+                rec_time = int(round(time.time() * 1000))
+                self.reply = recReply ["move"]
+                if self.reply != "":
+                    print "delay to receive: ",(rec_time-recReply ["time"])," - ",self.reply
             
 
             for event in pygame.event.get():

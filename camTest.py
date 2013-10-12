@@ -62,6 +62,7 @@ cv.NamedWindow("M", cv.CV_WINDOW_AUTOSIZE)
 
 i=0;
 reply=""
+mtime = 0;
 while True:
     time.sleep(0.1)
     reply = ""
@@ -69,6 +70,7 @@ while True:
     "detect if a key was pressed"
     
     
+    send_time = int(round(time.time() * 1000))
     if c != 255:
         "A key was pressed, so send its value" 
         camera_conn.send(("KEY",c))
@@ -81,15 +83,18 @@ while True:
     if camera_conn.poll():
         "Load it"
         recReply = camera_conn.recv()
+        rec_time = int(round(time.time() * 1000))
         "Now check the reply..."
-        if not isinstance(recReply, basestring) and len(recReply) == 2:
+        if not isinstance(recReply, basestring) and len(recReply) == 3:
             "two elements - move and matrix"
-            reply = recReply [0]
-            matrix = recReply [1]
-        elif not isinstance(recReply, basestring) and len(recReply) == 1:
+            reply = recReply ["move"]
+            matrix = recReply ["matrix"]
+            mtime = recReply ["time"]
+        elif not isinstance(recReply, basestring) and len(recReply) == 2:
             "one element but in list - move"
-            reply = recReply [0]
+            reply = recReply ["move"]
             matrix = None
+            mtime = recReply ["time"]
         else:
             "one string or number element"
             reply = recReply
@@ -101,7 +106,7 @@ while True:
                 break;
             
             elif len(reply) > 0:
-                print "PARENT: ",reply       
+                print "PARENT (delay to receive: ",(rec_time-mtime),"): ",reply       
             
         "Check and draw the matrix"
         if matrix != None:

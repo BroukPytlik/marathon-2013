@@ -216,36 +216,36 @@ class CamControl(object):
                         self.cam.camera_index = (self.cam.camera_index+1) % self.cam.cameras
                         self.cam.capture = cv.CaptureFromCAM(self.cam.camera_index)
                     elif c == ord('q'):
-                        self.procConn.send(("EXIT",None))
+                        self.procConn.send("EXIT")
                         exit(0)
                 elif operation == "GET":
                     
-                        reply =[]
+                        reply ={'time':int(round(time.time() * 1000))}
                         for vType in value:
                             if vType == "MOVE":
                                 "Test moves"
                                 mv = moves.getMove(self.matrixObjects)
                                 if mv == moves.LEFT:
-                                    reply.append("LEFT")
+                                    reply["move"]="LEFT"
                                 elif mv == moves.RIGHT:
-                                    reply.append("RIGHT")
+                                    reply["move"]="RIGHT"
                                 elif mv == moves.ATTACK_L:
-                                    reply.append("ATTACK LEFT")
+                                    reply["move"]="ATTACK LEFT"
                                 elif mv == moves.ATTACK_R:
-                                    reply.append("ATTACK RIGHT")
+                                    reply["move"]="ATTACK RIGHT"
                                 elif mv == moves.UP:
-                                    reply.append("UP")
+                                    reply["move"]="UP"
                                 elif mv == moves.UP_LEFT:
-                                    reply.append("UP LEFT")
+                                    reply["move"]="UP LEFT"
                                 elif mv == moves.UP_RIGHT:
-                                    reply.append("UP RIGHT")
+                                    reply["move"]="UP RIGHT"
                                 elif mv == moves.SPELL:
-                                    reply.append("SPELL")
+                                    reply["move"]="SPELL"
                                 else:
-                                    reply.append("")
+                                    reply["move"]=""
                             elif vType=="MATRIX":
                                 "sent matrix"
-                                reply.append(self.matrixObjects)
+                                reply["matrix"]=self.matrixObjects
                             else:
                                 print("UNKNOWN GET MESSAGE")
                         #print reply
