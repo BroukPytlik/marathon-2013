@@ -167,9 +167,7 @@ class CamControl(object):
             
             "Test moves"
             mv = moves.getMove(self.matrixObjects)
-            if mv == moves.UNKNOWN:
-                print "UNKNOWN!"
-            elif mv == moves.LEFT:
+            if mv == moves.LEFT:
                 print "LEFT"
             elif mv == moves.RIGHT:
                 print "RIGHT"
