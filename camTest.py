@@ -44,11 +44,8 @@ def drawInput(matrix):
                         ( (h*(y+1))-h/2 )
                         ),
                        font,(0,0,0))
-                       #self.font,(0,0,255))
-                       #self.font,(0,0,0))
     
     cv.ShowImage("M", mat)
-    #return mat
 
 
 """ ----------------- """

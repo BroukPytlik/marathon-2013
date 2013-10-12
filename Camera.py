@@ -6,12 +6,12 @@ import math,numpy
 "Pass matrix size in constructor"
 
 class Camera(object):
-    camera_index = 1;
+    camera_index = 0;
     cameras = 2;
     capture = 0;
     grayscale = False
     canny = False
-    capture = cv.CaptureFromCAM(camera_index)
+    capture = None
     
     matrix_width = 0;
     matrix_height = 0;
@@ -31,6 +31,16 @@ class Camera(object):
         self.matrix =  [[0 for x in xrange(self.matrix_width)] for x in xrange(self.matrix_height)] ;
         self.matrixFiltered =  [[0 for x in xrange(self.matrix_width)] for x in xrange(self.matrix_height)] ;
         self.matrixCalibration =  [[0 for x in xrange(self.matrix_width)] for x in xrange(self.matrix_height)] ;
+        
+        "Try find a camera "
+        while self.capture == None and self.camera_index < self.cameras:
+            try:
+                self.capture = cv.CaptureFromCAM(self.camera_index)
+            except Exception as e:
+                print e
+                self.capture = None
+                self.camera_index += 1
+        
 
     def objDetect(self,frame):
         if frame.height != self.frameCalibrationSynced.height:

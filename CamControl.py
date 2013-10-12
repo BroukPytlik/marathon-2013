@@ -329,8 +329,8 @@ class CamControl(object):
                            #self.font,(0,0,255))
                            #self.font,(0,0,0))
         
-        cv.ShowImage("Detection", out)
-        cv.ShowImage("Matrix", mat)
+        #cv.ShowImage("Detection", out)
+        #cv.ShowImage("Matrix", mat)
         #return mat
         
     def findObjects(self,matrix):
