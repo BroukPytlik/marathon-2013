@@ -1,8 +1,9 @@
 #Hra o tom, jak odporny kralik skladal hudbu
 
-import pygame, tmx, glob
+import pygame, tmx, glob, spell
 from CamControl import CamControl,Moves 
 from multiprocessing import Process, Pipe
+from spell import Spell
 
 
 
@@ -140,6 +141,8 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = False
         self.direction = 0 #coz je levo
         
+        self.caruje = False
+        
         self.ani_magic_r = []
         self.ani_magic_l = []
         self.ani_jump_r = []
@@ -185,47 +188,57 @@ class Player(pygame.sprite.Sprite):
         #yes doing anything    
         key = pygame.key.get_pressed() 
         
-        
-        
-        if key[pygame.K_LEFT]:
-        #if game.reply == 'LEFT' or game.reply == 'UP RIGHT':
-         #   if game.reply == 'UP RIGHT':
-          #      self.dy = -1000"""
-            self.rect.x -= 500 * dt
-            self.direction = 0
-            if self.resting:
-                self.image = self.ani_walk_l[game.ani_state]
-            
-        if key[pygame.K_RIGHT]:
-        #if game.reply == 'RIGHT' or game.reply == 'UP RIGHT':
-         #   if game.reply == 'UP RIGHT':
-          #      self.dy = -1000
-            self.rect.x += 500 * dt
-            self.direction = 1
-            if self.resting:
-                self.image = self.ani_walk_r[game.ani_state]
-            
-        if self.resting and key[pygame.K_SPACE]:
-        #if self.resting and game.reply == 'UP':
-            self.dy = -1000
-            
-        if key[pygame.K_LCTRL]:
-        #if game.reply == 'ATTACK LEFT' or game.reply == 'ATTACK RIGHT':
-            self.fighting = True
-            if self.direction == 0:
-                self.image = self.ani_fight_l[game.ani_state]
-            else:
-                self.image = self.ani_fight_r[game.ani_state]
+        if not self.caruje: #because he shouldnt be doint anything while doing magic
+            if key[pygame.K_LEFT]:
+            #if game.reply == 'LEFT' or game.reply == 'UP RIGHT':
+             #   if game.reply == 'UP RIGHT':
+              #      self.dy = -1000"""
+                self.rect.x -= 500 * dt
+                self.direction = 0
+                if self.resting:
+                    self.image = self.ani_walk_l[game.ani_state]
                 
-        if key[pygame.K_LALT]:
-        #if game.reply == 'SPELL':
-            Trumpet((self.rect.x, self.rect.y), game.actions) #spawnovani chlapka s trumetou 
+            if key[pygame.K_RIGHT]:
+            #if game.reply == 'RIGHT' or game.reply == 'UP RIGHT':
+             #   if game.reply == 'UP RIGHT':
+              #      self.dy = -1000
+                self.rect.x += 500 * dt
+                self.direction = 1
+                if self.resting:
+                    self.image = self.ani_walk_r[game.ani_state]
+                
+            if self.resting and key[pygame.K_SPACE]:
+            #if self.resting and game.reply == 'UP':
+                self.dy = -1000
+                
+            if key[pygame.K_LCTRL]:
+            #if game.reply == 'ATTACK LEFT' or game.reply == 'ATTACK RIGHT':
+                self.fighting = True
+                if self.direction == 0:
+                    self.image = self.ani_fight_l[game.ani_state]
+                else:
+                    self.image = self.ani_fight_r[game.ani_state]
+                    
+            if key[pygame.K_LALT]:
+            #if game.reply == 'SPELL':
+                self.caruje = True
+                #spustime mariuv vec
+                game.spell_conn.send('RECORD')
+                
+        else: #means caruje
+            if game.spell_conn.poll():
+                prijaty_spell = game.spell_conn.recv()
+                print prijaty_spell
+                self.caruje = False
+            
             if self.direction == 0:
                 self.image = self.ani_magic_l[game.ani_state]
             else:
                 self.image = self.ani_magic_r[game.ani_state]
-            
-        
+                
+            #zjistovani stavu kouzlici veci pro odmrznuti
+                
+                
             
         self.dy = min(700, self.dy + 60)
         self.rect.y += self.dy * dt
@@ -257,10 +270,10 @@ class Player(pygame.sprite.Sprite):
 class Game(object):
     reply = 0
     
-    
-    
     def main(self, screen):
         clock = pygame.time.Clock()
+        
+        
 
         background = pygame.image.load('background.png')
 
@@ -289,8 +302,14 @@ class Game(object):
         self.player = Player((start_cell.px, start_cell.py), self.sprites)
         self.tilemap.layers.append(self.sprites)
         
-            
-       
+        
+        
+        "Create pipe"
+        self.spell_conn, spell_child_conn = Pipe()
+        "create process"
+        self.spell_p = Process(target=worker2, args=(spell_child_conn,))
+        "start it"
+        self.spell_p.start()
 
         while 1:
             dt = clock.tick(30)
@@ -301,21 +320,20 @@ class Game(object):
                 self.ani_state+=1
                 if self.ani_state > self.ani_max:
                     self.ani_state=0
+                    
+                    
+                parent_conn.send(("GET",["MOVE"])) # honzovo      
+                if parent_conn.poll():    
+                    recReply = parent_conn.recv()
+                    self.reply = recReply [0]
+            
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     parent_conn.send(("KEY",ord('q') )) #vypinani honzove veci
-                    return
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    parent_conn.send(("KEY",ord('q') )) #vypinani honzove veci
+                    self.spell_conn.send('EXIT')
                     return
                 
-            parent_conn.send(("GET",["MOVE"])) # honzovo    
-            #if parent_conn.poll():
-             
-            recReply = parent_conn.recv()
-            self.reply = recReply [0]
-                #print self.reply
 
             self.tilemap.update(dt / 1000., self)
             screen.blit(background, (0, 0))
@@ -327,8 +345,14 @@ class Game(object):
                 return
 
 def worker(conn):
-        control = CamControl(conn);
-        control.run();
+    control = CamControl(conn);
+    control.run();
+        
+def worker2(conn):
+    spell = Spell(conn)
+    spell.main()
+    
+        
 
 if __name__ == '__main__':
     "Create pipe"
@@ -337,6 +361,7 @@ if __name__ == '__main__':
     p = Process(target=worker, args=(child_conn,))
     "start it"
     p.start()
+    
     
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
