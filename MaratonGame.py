@@ -345,8 +345,11 @@ class Game(object):
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    print "exiting..."
                     self.camera_conn.send(("KEY",ord('q') )) #vypinani honzove veci
                     self.spell_conn.send('EXIT')
+                    self.camera_p.join()
+                    self.spell_p.join()
                     return
                 
 
