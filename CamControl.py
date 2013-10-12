@@ -1,9 +1,10 @@
 # Camera input
 # Author: Jan Tulak (jan@tulak.me)
 #import cv
+import numpy, time
 from cv2 import cv
-from Camera import Camera;
-import numpy
+from Camera import Camera
+from multiprocessing import Process, Pipe
 
 class Moves (object):
     
@@ -27,8 +28,8 @@ class Moves (object):
 
     LEFT = 2
     M_LEFT = [
-          [0,0,0,2,0],
-          [0,0,2,2,2],
+          [0,0,0,2,2],
+          [0,0,0,2,2],
           [0,0,2,1,2],
           [0,0,2,1,2],
           [0,0,2,1,2]
@@ -36,8 +37,8 @@ class Moves (object):
     
     RIGHT = 3
     M_RIGHT = [
-          [0,2,0,0,0],
-          [2,2,2,0,0],
+          [2,2,0,0,0],
+          [2,2,0,0,0],
           [2,1,2,0,0],
           [2,1,2,0,0],
           [2,1,2,0,0]
@@ -129,10 +130,12 @@ class Moves (object):
         #return self.UNKNOWN
     
 class CamControl(object):
+    procConn = 0;
+    
     font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1, 1, 0, 3, 8) 
         
-    cv.NamedWindow("Detection", cv.CV_WINDOW_AUTOSIZE)
-    cv.NamedWindow("Matrix", cv.CV_WINDOW_AUTOSIZE)
+    #cv.NamedWindow("Detection", cv.CV_WINDOW_AUTOSIZE)
+    #cv.NamedWindow("Matrix", cv.CV_WINDOW_AUTOSIZE)
     
     matrix_size = 5;
     cam = Camera(matrix_size);
@@ -152,6 +155,10 @@ class CamControl(object):
     "What frame should be shown?"
     showFrameType = RAW
     
+    def __init__(self,procConn):
+        self.procConn = procConn
+        #self.run()
+    
     def objDetect(self,frame):
         diff = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 3)
         result = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
@@ -164,11 +171,88 @@ class CamControl(object):
         return result;
     
     def run(self):
+        
         self.cam.calibrate();
         moves = Moves()
         i = 0;
         while True:
-            frame = self._repeat()
+            c=-1
+            if self.procConn != None and self.procConn.poll():
+                (operation,value) = self.procConn.recv()
+                if operation == "KEY":
+                    c = value
+                    if c == ord('g'):
+                        print ("Switching grayscale/color")
+                        self.cam.grayscale = not self.cam.grayscale
+                    elif c == ord('e'):
+                        print ("Switching canny (edge detection)")
+                        self.cam.canny = not self.cam.canny
+                    elif c == ord('c'):
+                        print ("Calibrating...")
+                        self.cam.calibrate();
+                    elif c == ord('f'):
+                        if self.showFrameType == self.RAW:
+                            self.showFrameType = self.FILTERED;
+                            print ("Displaying filtered frames.")
+                        elif self.showFrameType == self.FILTERED:
+                            self.showFrameType = self.OBJECTS;
+                            print ("Displaying object detection frames.")
+                        else:
+                            self.showFrameType = self.RAW;
+                            print ("Displaying raw frames.")
+                    elif c == ord('d'):
+                        if self.showValueType == self.RAW:
+                            self.showValueType = self.FILTERED;
+                            print ("Displaying filtered values.")
+                        elif self.showValueType == self.FILTERED:
+                            self.showValueType = self.OBJECTS;
+                            print ("Displaying objects.")
+                        elif self.showValueType == self.OBJECTS:
+                            self.showValueType = self.RAW;
+                            print ("Displaying raw values.")
+                            
+                    elif c == ord('n'):
+                        print("Switching camera")
+                        self.cam.camera_index = (self.cam.camera_index+1) % self.cam.cameras
+                        self.cam.capture = cv.CaptureFromCAM(self.cam.camera_index)
+                    elif c == ord('q'):
+                        self.procConn.send(("EXIT",None))
+                        exit(0)
+                elif operation == "GET":
+                    
+                        reply =[]
+                        for vType in value:
+                            if vType == "MOVE":
+                                "Test moves"
+                                mv = moves.getMove(self.matrixObjects)
+                                if mv == moves.LEFT:
+                                    reply.append("LEFT")
+                                elif mv == moves.RIGHT:
+                                    reply.append("RIGHT")
+                                elif mv == moves.ATTACK_L:
+                                    reply.append("ATTACK LEFT")
+                                elif mv == moves.ATTACK_R:
+                                    reply.append("ATTACK RIGHT")
+                                elif mv == moves.UP:
+                                    reply.append("UP")
+                                elif mv == moves.UP_LEFT:
+                                    reply.append("UP LEFT")
+                                elif mv == moves.UP_RIGHT:
+                                    reply.append("UP RIGHT")
+                                elif mv == moves.SPELL:
+                                    reply.append("SPELL")
+                                else:
+                                    reply.append("")
+                            elif vType=="MATRIX":
+                                "sent matrix"
+                                reply.append(self.matrixObjects)
+                            else:
+                                print("UNKNOWN GET MESSAGE")
+                        #print reply
+                        self.procConn.send(reply)
+                    
+            
+            frame = self.cam.getFrame();
             self.findObjects(self.cam.matrixFiltered)
             #obj = self.objDetect(frame,0,numpy.median(frame[:,:]))
             if self.showFrameType == self.RAW:
@@ -182,84 +266,25 @@ class CamControl(object):
                 #obj = self.objDetect(frame)
                 self.drawInput(frame)
                 
+                
             if i < 5:
                 i +=1
             if i == 4:
                 self.cam.calibrate();
                 print (".")
-            
-            "Test moves"
-            mv = moves.getMove(self.matrixObjects)
-            if mv == moves.LEFT:
-                print "LEFT"
-            elif mv == moves.RIGHT:
-                print "RIGHT"
-            elif mv == moves.ATTACK_L:
-                print "ATTACK LEFT"
-            elif mv == moves.ATTACK_R:
-                print "ATTACK RIGHT"
-            elif mv == moves.UP:
-                print "UP"
-            elif mv == moves.UP_LEFT:
-                print "UP LEFT"
-            elif mv == moves.UP_RIGHT:
-                print "UP RIGHT"
-            elif mv == moves.SPELL:
-                print "SPELL"
+                
+            time.sleep(0.05)
             
     
     """
         Main cyclic function for getting frames
     """
-    def _repeat(self):
-        frame = self.cam.getFrame();
-        #self.cam.matrix = self.cam.computeMatrix(frame);
-            
-        c = cv.WaitKey(10)& 255
-        if c == ord('g'):
-            print ("Switching grayscale/color")
-            self.cam.grayscale = not self.cam.grayscale
-        elif c == ord('e'):
-            print ("Switching canny (edge detection)")
-            self.cam.canny = not self.cam.canny
-        elif c == ord('c'):
-            print ("Calibrating...")
-            self.cam.calibrate();
-        elif c == ord('f'):
-            if self.showFrameType == self.RAW:
-                self.showFrameType = self.FILTERED;
-                print ("Displaying filtered frames.")
-            elif self.showFrameType == self.FILTERED:
-                self.showFrameType = self.OBJECTS;
-                print ("Displaying object detection frames.")
-            else:
-                self.showFrameType = self.RAW;
-                print ("Displaying raw frames.")
-        elif c == ord('d'):
-            if self.showValueType == self.RAW:
-                self.showValueType = self.FILTERED;
-                print ("Displaying filtered values.")
-            elif self.showValueType == self.FILTERED:
-                self.showValueType = self.OBJECTS;
-                print ("Displaying objects.")
-            elif self.showValueType == self.OBJECTS:
-                self.showValueType = self.RAW;
-                print ("Displaying raw values.")
-                
-        elif c == ord('n'):
-            print("Switching camera")
-            self.cam.camera_index = (self.cam.camera_index+1) % self.cam.cameras
-            self.cam.capture = cv.CaptureFromCAM(self.cam.camera_index)
-        elif c == ord('q'):
-            exit(0)
-        
-        return frame;
+   
     
     def drawInput(self,frame):
         w = frame.width/self.matrix_size
         h = frame.height/self.matrix_size
         
-        out = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 3)
         mat = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 3)
         cv.Copy(self.cam.frameRaw, mat)
         #cv.CvtColor(frame, out, cv.CV_GRAY2BGR)
@@ -300,12 +325,13 @@ class CamControl(object):
                             ( (w*(x+1))-w/2-40 ),
                             ( (h*(y+1))-h/2 )
                             ),
-                           #self.font,(255 if self.cam.matrix [x][y] < 128 else 0,0,0))
-                           self.font,(0,0,255))
+                           self.font,(255 if self.cam.matrix [x][y] < 128 else 0,0,0))
+                           #self.font,(0,0,255))
                            #self.font,(0,0,0))
-                           
+        
         cv.ShowImage("Detection", out)
         cv.ShowImage("Matrix", mat)
+        #return mat
         
     def findObjects(self,matrix):
         for x in range(self.matrix_size):
