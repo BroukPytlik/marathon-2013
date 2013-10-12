@@ -74,8 +74,8 @@ while True:
         parent_conn.send(("KEY",c))
     elif i % 2:
         "No key was pressed, so in odd cycles ask for status"
-        #parent_conn.send(("GET",["MOVE","MATRIX"]))
-        parent_conn.send(("GET",["MOVE"]))
+        parent_conn.send(("GET",["MOVE","MATRIX"]))
+        #parent_conn.send(("GET",["MOVE"]))
     
     "Check if there is something in a queue"
     if parent_conn.poll():

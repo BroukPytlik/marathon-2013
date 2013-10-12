@@ -273,7 +273,7 @@ class CamControl(object):
                 self.cam.calibrate();
                 print (".")
                 
-            time.sleep(0.05)
+            #time.sleep(0.01)
             
     
     """

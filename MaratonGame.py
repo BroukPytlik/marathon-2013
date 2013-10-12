@@ -1,6 +1,6 @@
 #Hra o tom, jak odporny kralik skladal hudbu
 
-import pygame, tmx, glob, spell
+import pygame, tmx, glob, spell,time
 from CamControl import CamControl,Moves 
 from multiprocessing import Process, Pipe
 from spell import Spell
@@ -189,8 +189,8 @@ class Player(pygame.sprite.Sprite):
         key = pygame.key.get_pressed() 
         
         if not self.caruje: #because he shouldnt be doint anything while doing magic
-            if key[pygame.K_LEFT] or game.reply == 'LEFT' or game.reply == 'UP RIGHT':
-                if game.reply == 'UP RIGHT':
+            if key[pygame.K_LEFT] or game.reply == 'LEFT' or game.reply == 'UP LEFT':
+                if self.resting and game.reply == 'UP LEFT':
                     self.dy = -1000
                 self.rect.x -= 500 * dt
                 self.direction = 0
@@ -198,7 +198,7 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.ani_walk_l[game.ani_state]
                 
             if key[pygame.K_RIGHT] or game.reply == 'RIGHT' or game.reply == 'UP RIGHT':
-                if game.reply == 'UP RIGHT':
+                if self.resting and game.reply == 'UP RIGHT':
                     self.dy = -1000
                 self.rect.x += 500 * dt
                 self.direction = 1
@@ -321,6 +321,8 @@ class Game(object):
                 if parent_conn.poll():    
                     recReply = parent_conn.recv()
                     self.reply = recReply [0]
+                    if self.reply != "":
+                        print int(round(time.time() * 1000))," - ",self.reply
             
 
             for event in pygame.event.get():
