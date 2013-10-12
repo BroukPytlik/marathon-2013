@@ -264,22 +264,27 @@ class Player(pygame.sprite.Sprite):
 
 class Game(object):
     reply = 0
+    background = None
+    tilemap = None
+    ani_speed_init = 2
+    some_counting_of_desired_delay_in_bunneeeehs_animation = 0
+    ani_speed=ani_speed_init
+    ani_max=2
+    ani_state=0
     
-    def main(self, screen):
-        clock = pygame.time.Clock()
-        
-        
-
-        background = pygame.image.load('background.png')
-
+    actions = None
+    sprites = None
+    player = None
+    
+    spell_conn = None
+    spell_p = None
+    camera_conn = None
+    camera_p = None
+    
+    
+    def __init__(self):
+        self.background = pygame.image.load('background.png')
         self.tilemap = tmx.load('marathon.tmx', screen.get_size())
-        
-        self.ani_speed_init = 2
-        self.some_counting_of_desired_delay_in_bunneeeehs_animation = 0
-        self.ani_speed=self.ani_speed_init
-        self.ani_max=2
-        self.ani_state=0
-        
         #actions layer
         self.actions = tmx.SpriteLayer()
         self.tilemap.layers.append(self.actions)
@@ -297,14 +302,22 @@ class Game(object):
         self.player = Player((start_cell.px, start_cell.py), self.sprites)
         self.tilemap.layers.append(self.sprites)
         
-        
-        
         "Create pipe"
         self.spell_conn, spell_child_conn = Pipe()
         "create process"
-        self.spell_p = Process(target=worker2, args=(spell_child_conn,))
+        self.spell_p = Process(target=_startSpell, args=(spell_child_conn,))
         "start it"
         self.spell_p.start()
+        
+        "Create pipe"
+        self.camera_conn, camera_child_conn = Pipe()
+        "create process"
+        self.camera_p = Process(target=_startCamera, args=(camera_child_conn,))
+        "start it"
+        self.camera_p.start()
+    
+    def main(self, screen):
+        clock = pygame.time.Clock()
 
         while 1:
             dt = clock.tick(30)
@@ -317,23 +330,23 @@ class Game(object):
                     self.ani_state=0
                     
                     
-                parent_conn.send(("GET",["MOVE"])) # honzovo      
-                if parent_conn.poll():    
-                    recReply = parent_conn.recv()
+                self.camera_conn.send(("GET",["MOVE"])) # honzovo      
+                if self.camera_conn.poll():    
+                    recReply = self.camera_conn.recv()
                     self.reply = recReply [0]
                     if self.reply != "":
-                        print int(round(time.time() * 1000))," - ",self.reply
+                        print time.time()," - ",self.reply
             
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                    parent_conn.send(("KEY",ord('q') )) #vypinani honzove veci
+                    self.camera_conn.send(("KEY",ord('q') )) #vypinani honzove veci
                     self.spell_conn.send('EXIT')
                     return
                 
 
             self.tilemap.update(dt / 1000., self)
-            screen.blit(background, (0, 0))
+            screen.blit(self.background, (0, 0))
             self.tilemap.draw(screen)
             pygame.display.flip()
 
@@ -341,26 +354,21 @@ class Game(object):
                 print 'YOU DIED'
                 return
 
-def worker(conn):
+def _startCamera(conn):
     control = CamControl(conn);
     control.run();
         
-def worker2(conn):
+def _startSpell(conn):
     spell = Spell(conn)
     spell.main()
     
         
 
 if __name__ == '__main__':
-    "Create pipe"
-    parent_conn, child_conn = Pipe()
-    "create process"
-    p = Process(target=worker, args=(child_conn,))
-    "start it"
-    p.start()
     
     
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
-    Game().main(screen)
+    game = Game()
+    game.main(screen)
 

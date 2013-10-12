@@ -11,7 +11,7 @@ from multiprocessing import Process, Pipe
 import time
 
 "Will start the camera control"
-def worker(conn):
+def _startCamera(conn):
     control = CamControl(conn);
     control.run();
 
@@ -51,9 +51,9 @@ def drawInput(matrix):
 """ ----------------- """
 
 "Create pipe"
-parent_conn, child_conn = Pipe()
+camera_conn, camera_child_conn = Pipe()
 "create process"
-p = Process(target=worker, args=(child_conn,))
+p = Process(target=_startCamera, args=(camera_child_conn,))
 "start it"
 p.start()
 
@@ -71,16 +71,16 @@ while True:
     
     if c != 255:
         "A key was pressed, so send its value" 
-        parent_conn.send(("KEY",c))
+        camera_conn.send(("KEY",c))
     elif i % 2:
         "No key was pressed, so in odd cycles ask for status"
-        parent_conn.send(("GET",["MOVE","MATRIX"]))
-        #parent_conn.send(("GET",["MOVE"]))
+        camera_conn.send(("GET",["MOVE","MATRIX"]))
+        #camera_conn.send(("GET",["MOVE"]))
     
     "Check if there is something in a queue"
-    if parent_conn.poll():
+    if camera_conn.poll():
         "Load it"
-        recReply = parent_conn.recv()
+        recReply = camera_conn.recv()
         "Now check the reply..."
         if not isinstance(recReply, basestring) and len(recReply) == 2:
             "two elements - move and matrix"
