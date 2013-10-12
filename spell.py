@@ -44,8 +44,9 @@ class Spell:
         self.conn.send(4)
     
     def run(self): 
-        #arecord -d 7 -f cd -t wav -D copy zaznam.wav        
-        commands.getoutput('arecord -d 7 -f cd -t wav -D copy zaznam.wav ')
+        #arecord -d 7 -f cd -t wav -D copy zaznam.wav
+        print 'ZACINAME NAHRAVAT:'        
+        print commands.getoutput('arecord -d 7 -f cd -t wav zaznam.wav')
         # open up a wave
         try:
             wf=wave.open('zaznam.wav', 'rb')
@@ -214,21 +215,27 @@ class Spell:
             elif len(melody)<5:
                 print "unknown melody"
                 self.conn.send(0)
+                return
             else:
                 del melody[0]
-         
+        print melody 
         if s==15:
             print "black tears"
             self.conn.send(1)
+            return
         elif s==26:
             print "classico"
             self.conn.send(2)
+            return
         elif s==39:
             print "Breaking the law"
             self.conn.send(3)
+            return
         elif s==47:
             print "One more magic potion"
             self.conn.send(4)
+            return
         else:
             print "unknown melody"
             self.conn.send(0)
+            return
