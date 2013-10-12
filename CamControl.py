@@ -178,78 +178,79 @@ class CamControl(object):
         while True:
             c=-1
             if self.procConn != None and self.procConn.poll():
-                (operation,value) = self.procConn.recv()
-                if operation == "KEY":
-                    c = value
-                    if c == ord('g'):
-                        print ("Switching grayscale/color")
-                        self.cam.grayscale = not self.cam.grayscale
-                    elif c == ord('e'):
-                        print ("Switching canny (edge detection)")
-                        self.cam.canny = not self.cam.canny
-                    elif c == ord('c'):
-                        print ("Calibrating...")
-                        self.cam.calibrate();
-                    elif c == ord('f'):
-                        if self.showFrameType == self.RAW:
-                            self.showFrameType = self.FILTERED;
-                            print ("Displaying filtered frames.")
-                        elif self.showFrameType == self.FILTERED:
-                            self.showFrameType = self.OBJECTS;
-                            print ("Displaying object detection frames.")
-                        else:
-                            self.showFrameType = self.RAW;
-                            print ("Displaying raw frames.")
-                    elif c == ord('d'):
-                        if self.showValueType == self.RAW:
-                            self.showValueType = self.FILTERED;
-                            print ("Displaying filtered values.")
-                        elif self.showValueType == self.FILTERED:
-                            self.showValueType = self.OBJECTS;
-                            print ("Displaying objects.")
-                        elif self.showValueType == self.OBJECTS:
-                            self.showValueType = self.RAW;
-                            print ("Displaying raw values.")
-                            
-                    elif c == ord('n'):
-                        print("Switching camera")
-                        self.cam.camera_index = (self.cam.camera_index+1) % self.cam.cameras
-                        self.cam.capture = cv.CaptureFromCAM(self.cam.camera_index)
-                    elif c == ord('q'):
-                        self.procConn.send("EXIT")
-                        exit(0)
-                elif operation == "GET":
-                    
-                        reply ={'time':int(round(time.time() * 1000))}
-                        for vType in value:
-                            if vType == "MOVE":
-                                "Test moves"
-                                mv = moves.getMove(self.matrixObjects)
-                                if mv == moves.LEFT:
-                                    reply["move"]="LEFT"
-                                elif mv == moves.RIGHT:
-                                    reply["move"]="RIGHT"
-                                elif mv == moves.ATTACK_L:
-                                    reply["move"]="ATTACK LEFT"
-                                elif mv == moves.ATTACK_R:
-                                    reply["move"]="ATTACK RIGHT"
-                                elif mv == moves.UP:
-                                    reply["move"]="UP"
-                                elif mv == moves.UP_LEFT:
-                                    reply["move"]="UP LEFT"
-                                elif mv == moves.UP_RIGHT:
-                                    reply["move"]="UP RIGHT"
-                                elif mv == moves.SPELL:
-                                    reply["move"]="SPELL"
-                                else:
-                                    reply["move"]=""
-                            elif vType=="MATRIX":
-                                "sent matrix"
-                                reply["matrix"]=self.matrixObjects
+                while self.procConn.poll():
+                    (operation,value) = self.procConn.recv()
+                    if operation == "KEY":
+                        c = value
+                        if c == ord('g'):
+                            print ("Switching grayscale/color")
+                            self.cam.grayscale = not self.cam.grayscale
+                        elif c == ord('e'):
+                            print ("Switching canny (edge detection)")
+                            self.cam.canny = not self.cam.canny
+                        elif c == ord('c'):
+                            print ("Calibrating...")
+                            self.cam.calibrate();
+                        elif c == ord('f'):
+                            if self.showFrameType == self.RAW:
+                                self.showFrameType = self.FILTERED;
+                                print ("Displaying filtered frames.")
+                            elif self.showFrameType == self.FILTERED:
+                                self.showFrameType = self.OBJECTS;
+                                print ("Displaying object detection frames.")
                             else:
-                                print("UNKNOWN GET MESSAGE")
-                        #print reply
-                        self.procConn.send(reply)
+                                self.showFrameType = self.RAW;
+                                print ("Displaying raw frames.")
+                        elif c == ord('d'):
+                            if self.showValueType == self.RAW:
+                                self.showValueType = self.FILTERED;
+                                print ("Displaying filtered values.")
+                            elif self.showValueType == self.FILTERED:
+                                self.showValueType = self.OBJECTS;
+                                print ("Displaying objects.")
+                            elif self.showValueType == self.OBJECTS:
+                                self.showValueType = self.RAW;
+                                print ("Displaying raw values.")
+                                
+                        elif c == ord('n'):
+                            print("Switching camera")
+                            self.cam.camera_index = (self.cam.camera_index+1) % self.cam.cameras
+                            self.cam.capture = cv.CaptureFromCAM(self.cam.camera_index)
+                        elif c == ord('q'):
+                            self.procConn.send("EXIT")
+                            exit(0)
+                            
+                if operation == "GET":
+                    reply ={'time':int(round(time.time() * 1000))}
+                    for vType in value:
+                        if vType == "MOVE":
+                            "Test moves"
+                            mv = moves.getMove(self.matrixObjects)
+                            if mv == moves.LEFT:
+                                reply["move"]="LEFT"
+                            elif mv == moves.RIGHT:
+                                reply["move"]="RIGHT"
+                            elif mv == moves.ATTACK_L:
+                                reply["move"]="ATTACK LEFT"
+                            elif mv == moves.ATTACK_R:
+                                reply["move"]="ATTACK RIGHT"
+                            elif mv == moves.UP:
+                                reply["move"]="UP"
+                            elif mv == moves.UP_LEFT:
+                                reply["move"]="UP LEFT"
+                            elif mv == moves.UP_RIGHT:
+                                reply["move"]="UP RIGHT"
+                            elif mv == moves.SPELL:
+                                reply["move"]="SPELL"
+                            else:
+                                reply["move"]=""
+                        elif vType=="MATRIX":
+                            "sent matrix"
+                            reply["matrix"]=self.matrixObjects
+                        else:
+                            print("UNKNOWN GET MESSAGE")
+                    #print reply
+                    self.procConn.send(reply)
                     
             
             frame = self.cam.getFrame();
