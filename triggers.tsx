@@ -108,6 +108,16 @@
    <property name="left" value="yes"/>
   </properties>
  </tile>
+ <tile id="22">
+  <properties>
+   <property name="mic" value="yes"/>
+  </properties>
+ </tile>
+ <tile id="23">
+  <properties>
+   <property name="drum" value="yes"/>
+  </properties>
+ </tile>
  <tile id="25">
   <properties>
    <property name="blockers" value="tlrb"/>

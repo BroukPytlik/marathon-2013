@@ -1,10 +1,10 @@
 #Hra o tom, jak odporny kralik skladal hudbu
 
-import pygame, tmx, glob,time
-from CamControl import CamControl,Moves 
+import pygame, tmx,time
+from CamControl import CamControl#,#Moves 
 from multiprocessing import Process, Pipe
 from spell import Spell
-from timer import Timer
+#from timer import Timer
 
 
 
@@ -31,7 +31,7 @@ class Trumpet(pygame.sprite.Sprite):
         super(Trumpet, self).__init__(*groups)
         self.some_counting = 0
         self.rect = pygame.rect.Rect(location, self.image.get_size())
-        self.sound = pygame.mixer.Sound('cat.wav')
+        #self.sound = pygame.mixer.Sound('cat.wav')
         
         self.imageSt = []
         self.imagePl = []
@@ -49,11 +49,70 @@ class Trumpet(pygame.sprite.Sprite):
         if self.some_counting > 1:
             self.some_counting -=1
             self.cooldown = 1
-            self.sound.play()
+            #self.sound.play()
             self.image = self.imagePl[game.ani_state]
         else:
             self.image = self.imageSt[game.ani_state]
-    
+
+
+class Drum(pygame.sprite.Sprite):
+    image = pygame.image.load('Enemy/Drum/standing/1.png')
+    def __init__(self, location, *groups):
+        super(Drum, self).__init__(*groups)
+        self.some_counting = 0
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+        #self.sound = pygame.mixer.Sound('cat.wav')
+        
+        self.imageSt = []
+        self.imagePl = []
+        
+        for i in [0,1,2]:
+            self.imageSt.append(pygame.image.load('Enemy/Drum/standing/'+str(i+1)+'.png'))
+            self.imagePl.append(pygame.image.load('Enemy/Drum/playing/'+str(i+1)+'.png'))
+        
+    def update(self, dt, game):
+        if self.rect.colliderect(game.player.rect.move(96,0)):
+            if game.player.fighting == True:
+                self.some_counting = 40 #time of the effect
+        
+        if self.some_counting > 1:
+            self.some_counting -=1
+            self.cooldown = 1
+            #self.sound.play()
+            self.image = self.imagePl[game.ani_state]
+        else:
+            self.image = self.imageSt[game.ani_state]
+            
+
+class Microphone(pygame.sprite.Sprite):
+    image = pygame.image.load('Enemy/Mikro/standing/1.png')
+    def __init__(self, location, *groups):
+        super(Microphone, self).__init__(*groups)
+        self.some_counting = 0
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+        #self.sound = pygame.mixer.Sound('cat.wav')
+        
+        self.imageSt = []
+        self.imagePl = []
+        
+        for i in [0,1,2]:
+            self.imageSt.append(pygame.image.load('Enemy/Mikro/standing/'+str(i+1)+'.png'))
+            self.imagePl.append(pygame.image.load('Enemy/Mikro/playing/'+str(i+1)+'.png'))
+        
+    def update(self, dt, game):
+        if self.rect.colliderect(game.player.rect.move(96,0)):
+            if game.player.fighting == True:
+                self.some_counting = 40 #time of the effect
+        
+        if self.some_counting > 1:
+            self.some_counting -=1
+            self.cooldown = 1
+            #self.sound.play()
+            self.image = self.imagePl[game.ani_state]
+        else:
+            self.image = self.imageSt[game.ani_state]
+            
+                
         
 
 class Enemy(pygame.sprite.Sprite):
@@ -297,6 +356,12 @@ class Game(object):
             
         for x in self.tilemap.layers['triggers'].find('tardis'):
             Tardis((x.px, x.py-64), self.actions)
+            
+        for x in self.tilemap.layers['triggers'].find('drum'):
+            Drum((x.px, x.py-64), self.actions)
+            
+        for x in self.tilemap.layers['triggers'].find('mic'):
+            Microphone((x.px, x.py-64), self.actions)
 
         self.sprites = tmx.SpriteLayer()
         start_cell = self.tilemap.layers['triggers'].find('player')[0]
