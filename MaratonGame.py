@@ -189,38 +189,33 @@ class Player(pygame.sprite.Sprite):
         key = pygame.key.get_pressed() 
         
         if not self.caruje: #because he shouldnt be doint anything while doing magic
-            if key[pygame.K_LEFT]:
-            #if game.reply == 'LEFT' or game.reply == 'UP RIGHT':
-             #   if game.reply == 'UP RIGHT':
-              #      self.dy = -1000"""
+            if key[pygame.K_LEFT] or game.reply == 'LEFT' or game.reply == 'UP RIGHT':
+                if game.reply == 'UP RIGHT':
+                    self.dy = -1000
                 self.rect.x -= 500 * dt
                 self.direction = 0
                 if self.resting:
                     self.image = self.ani_walk_l[game.ani_state]
                 
-            if key[pygame.K_RIGHT]:
-            #if game.reply == 'RIGHT' or game.reply == 'UP RIGHT':
-             #   if game.reply == 'UP RIGHT':
-              #      self.dy = -1000
+            if key[pygame.K_RIGHT] or game.reply == 'RIGHT' or game.reply == 'UP RIGHT':
+                if game.reply == 'UP RIGHT':
+                    self.dy = -1000
                 self.rect.x += 500 * dt
                 self.direction = 1
                 if self.resting:
                     self.image = self.ani_walk_r[game.ani_state]
                 
-            if self.resting and key[pygame.K_SPACE]:
-            #if self.resting and game.reply == 'UP':
+            if self.resting and (key[pygame.K_SPACE] or  game.reply == 'UP'):
                 self.dy = -1000
                 
-            if key[pygame.K_LCTRL]:
-            #if game.reply == 'ATTACK LEFT' or game.reply == 'ATTACK RIGHT':
+            if key[pygame.K_LCTRL] or game.reply == 'ATTACK LEFT' or game.reply == 'ATTACK RIGHT':
                 self.fighting = True
                 if self.direction == 0:
                     self.image = self.ani_fight_l[game.ani_state]
                 else:
                     self.image = self.ani_fight_r[game.ani_state]
                     
-            if key[pygame.K_LALT]:
-            #if game.reply == 'SPELL':
+            if key[pygame.K_LALT] or game.reply == 'SPELL':
                 self.caruje = True
                 #spustime mariuv vec
                 game.spell_conn.send('RECORD')
