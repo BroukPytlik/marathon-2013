@@ -64,6 +64,11 @@
    <property name="top" value="yes"/>
   </properties>
  </tile>
+ <tile id="15">
+  <properties>
+   <property name="tardis" value="yes"/>
+  </properties>
+ </tile>
  <tile id="16">
   <properties>
    <property name="blockers" value="t"/>

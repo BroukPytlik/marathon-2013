@@ -4,16 +4,7 @@ import pygame, tmx, glob
 from CamControl import CamControl,Moves 
 from multiprocessing import Process, Pipe
 
-def worker(conn):
-    control = CamControl(conn);
-    control.run();
 
-"Create pipe"
-parent_conn, child_conn = Pipe()
-"create process"
-p = Process(target=worker, args=(child_conn,))
-"start it"
-p.start()
 
 class Tardis(pygame.sprite.Sprite):
     image = pygame.image.load('Enemy/Tardis/1.png')
@@ -27,6 +18,9 @@ class Tardis(pygame.sprite.Sprite):
         
         for i in [0,1,2]:
             self.imageSt.append(pygame.image.load('Enemy/Tardis/'+str(i+1)+'.png'))
+            
+    def update(self, dt, game):
+        self.image = self.imageSt[game.ani_state]
             
             
 class Trumpet(pygame.sprite.Sprite):
@@ -78,8 +72,7 @@ class Enemy(pygame.sprite.Sprite):
             self.image_sing_l.append(pygame.image.load('Enemy/Cthulhu/Lsinging/'+str(i+1)+'.png'))
             self.image_sing_r.append(pygame.image.load('Enemy/Cthulhu/Rsinging/'+str(i+1)+'.png'))
 
-        self.sound = pygame.mixer.Sound('zelena-vec.wav')
-        self.sound.play()
+        self.sound = pygame.mixer.Sound('fungujici-zelena-vec.wav')
         self.image = self.image_walk_l[0]
         self.rect = pygame.rect.Rect(location, self.image.get_size())
         # movement in the X direction; postive is right, negative is left
@@ -88,7 +81,7 @@ class Enemy(pygame.sprite.Sprite):
     def update(self, dt, game):
         if self.rect.colliderect(game.player.rect.move(96,0)):
             if game.player.fighting == True:
-                self.some_counting = 40 #time of the effect
+                self.some_counting = 220 #time of the effect
         
         # move the enemy by 100 pixels per second in the movement direction
         self.rect.x += self.direction * 150 * dt
@@ -147,37 +140,29 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = False
         self.direction = 0 #coz je levo
         
+        self.ani_magic_r = []
+        self.ani_magic_l = []
+        self.ani_jump_r = []
+        self.ani_jump_l = []
+        self.ani_fight_r = []
+        self.ani_fight_l = []
+        self.ani_walk_r = []
+        self.ani_walk_l = []
+        self.ani_stand_r = []
+        self.ani_stand_l = []
         
-        #Animations: 
-        #1,2
-        self.ani_stand_r = glob.glob("Buneeh/Rstanding/*.png")
-        self.ani_stand_l = glob.glob("Buneeh/Lstanding/*.png")
-        self.ani_stand_r.sort()
-        self.ani_stand_l.sort()
+        for i in [0,1,2]:
+            self.ani_stand_r.append(pygame.image.load('Buneeh/Rstanding/'+str(i+1)+'.png'))
+            self.ani_stand_l.append(pygame.image.load('Buneeh/Lstanding/'+str(i+1)+'.png'))
+            self.ani_walk_r.append(pygame.image.load('Buneeh/Rwalking/'+str(i+1)+'.png'))
+            self.ani_walk_l.append(pygame.image.load('Buneeh/Lwalking/'+str(i+1)+'.png'))
+            self.ani_fight_r.append(pygame.image.load('Buneeh/Rfighting/'+str(i+1)+'.png'))
+            self.ani_fight_l.append(pygame.image.load('Buneeh/Lfighting/'+str(i+1)+'.png'))
+            self.ani_jump_r.append(pygame.image.load('Buneeh/Rjumping/'+str(i+1)+'.png'))
+            self.ani_jump_l.append(pygame.image.load('Buneeh/Ljumping/'+str(i+1)+'.png'))
+            self.ani_magic_r.append(pygame.image.load('Buneeh/Rmagic/'+str(i+1)+'.png'))
+            self.ani_magic_l.append(pygame.image.load('Buneeh/Lmagic/'+str(i+1)+'.png'))
         
-        #3,4
-        self.ani_walk_r = glob.glob("Buneeh/Rwalking/*.png")
-        self.ani_walk_l = glob.glob("Buneeh/Lwalking/*.png")
-        self.ani_walk_r.sort()
-        self.ani_walk_l.sort()
-        
-        #5,6
-        self.ani_fight_r = glob.glob("Buneeh/Rfighting/*.png")
-        self.ani_fight_l = glob.glob("Buneeh/Lfighting/*.png")
-        self.ani_fight_r.sort()
-        self.ani_fight_l.sort()
-        
-        #7,8
-        self.ani_jump_r = glob.glob("Buneeh/Rjumping/*.png")
-        self.ani_jump_l = glob.glob("Buneeh/Ljumping/*.png")
-        self.ani_jump_r.sort()
-        self.ani_jump_l.sort()
-        
-        #9,10
-        self.ani_magic_r = glob.glob("Buneeh/Rmagic/*.png")
-        self.ani_magic_l = glob.glob("Buneeh/Lmagic/*.png")
-        self.ani_magic_r.sort()
-        self.ani_magic_l.sort()
         
 
     def update(self, dt, game):
@@ -187,14 +172,14 @@ class Player(pygame.sprite.Sprite):
         #not doing anything     
         if self.resting:    
             if self.direction == 0:
-                self.image = pygame.image.load(self.ani_stand_l[game.ani_state])
+                self.image = self.ani_stand_l[game.ani_state]
             else:
-                self.image = pygame.image.load(self.ani_stand_r[game.ani_state])
+                self.image = self.ani_stand_r[game.ani_state]
         else:
             if self.direction == 0:
-                self.image = pygame.image.load(self.ani_jump_l[game.ani_state])
+                self.image = self.ani_jump_l[game.ani_state]
             else:
-                self.image = pygame.image.load(self.ani_jump_r[game.ani_state])    
+                self.image = self.ani_jump_r[game.ani_state]  
            
         self.fighting = False
         #yes doing anything    
@@ -209,7 +194,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.x -= 500 * dt
             self.direction = 0
             if self.resting:
-                self.image = pygame.image.load(self.ani_walk_l[game.ani_state])
+                self.image = self.ani_walk_l[game.ani_state]
             
         if key[pygame.K_RIGHT]:
         #if game.reply == 'RIGHT' or game.reply == 'UP RIGHT':
@@ -218,7 +203,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.x += 500 * dt
             self.direction = 1
             if self.resting:
-                self.image = pygame.image.load(self.ani_walk_r[game.ani_state])
+                self.image = self.ani_walk_r[game.ani_state]
             
         if self.resting and key[pygame.K_SPACE]:
         #if self.resting and game.reply == 'UP':
@@ -228,17 +213,17 @@ class Player(pygame.sprite.Sprite):
         #if game.reply == 'ATTACK LEFT' or game.reply == 'ATTACK RIGHT':
             self.fighting = True
             if self.direction == 0:
-                self.image = pygame.image.load(self.ani_fight_l[game.ani_state])
+                self.image = self.ani_fight_l[game.ani_state]
             else:
-                self.image = pygame.image.load(self.ani_fight_r[game.ani_state])
+                self.image = self.ani_fight_r[game.ani_state]
                 
         if key[pygame.K_LALT]:
         #if game.reply == 'SPELL':
             Trumpet((self.rect.x, self.rect.y), game.actions) #spawnovani chlapka s trumetou 
             if self.direction == 0:
-                self.image = pygame.image.load(self.ani_magic_l[game.ani_state])
+                self.image = self.ani_magic_l[game.ani_state]
             else:
-                self.image = pygame.image.load(self.ani_magic_r[game.ani_state])
+                self.image = self.ani_magic_r[game.ani_state]
             
         
             
@@ -271,6 +256,9 @@ class Player(pygame.sprite.Sprite):
 
 class Game(object):
     reply = 0
+    
+    
+    
     def main(self, screen):
         clock = pygame.time.Clock()
 
@@ -287,21 +275,19 @@ class Game(object):
         #actions layer
         self.actions = tmx.SpriteLayer()
         self.tilemap.layers.append(self.actions)
-        for trumpet in self.tilemap.layers['triggers'].find('trumpet'):
-            Trumpet((trumpet.px, trumpet.py), self.actions)
+        for x in self.tilemap.layers['triggers'].find('trumpet'):
+            Trumpet((x.px, x.py), self.actions)
+            
+        for x in self.tilemap.layers['triggers'].find('enemy'):
+            Enemy((x.px, x.py), self.actions)
+            
+        for x in self.tilemap.layers['triggers'].find('tardis'):
+            Tardis((x.px, x.py-64), self.actions)
 
         self.sprites = tmx.SpriteLayer()
         start_cell = self.tilemap.layers['triggers'].find('player')[0]
         self.player = Player((start_cell.px, start_cell.py), self.sprites)
         self.tilemap.layers.append(self.sprites)
-        
-        # add a separate layer for enemies so we can find them more easily later
-        self.enemies = tmx.SpriteLayer()
-        self.tilemap.layers.append(self.enemies)
-        # add an enemy for each "enemy" trigger in the map
-        for enemy in self.tilemap.layers['triggers'].find('enemy'):
-            Enemy((enemy.px, enemy.py), self.enemies)
-
         
             
        
@@ -325,10 +311,10 @@ class Game(object):
                     return
                 
             parent_conn.send(("GET",["MOVE"])) # honzovo    
-            if parent_conn.poll():
-                "Load it"
-                recReply = parent_conn.recv()
-                self.reply = recReply [0]
+            #if parent_conn.poll():
+             
+            recReply = parent_conn.recv()
+            self.reply = recReply [0]
                 #print self.reply
 
             self.tilemap.update(dt / 1000., self)
@@ -340,7 +326,18 @@ class Game(object):
                 print 'YOU DIED'
                 return
 
+def worker(conn):
+        control = CamControl(conn);
+        control.run();
+
 if __name__ == '__main__':
+    "Create pipe"
+    parent_conn, child_conn = Pipe()
+    "create process"
+    p = Process(target=worker, args=(child_conn,))
+    "start it"
+    p.start()
+    
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
     Game().main(screen)
