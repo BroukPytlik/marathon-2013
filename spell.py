@@ -46,7 +46,7 @@ class Spell:
     def run(self): 
         #arecord -d 7 -f cd -t wav -D copy zaznam.wav
         print 'ZACINAME NAHRAVAT:'        
-        print commands.getoutput('arecord -d 7 -f cd -t wav zaznam.wav')
+        print commands.getoutput('arecord -d 6 -f cd -t wav zaznam.wav')
         # open up a wave
         try:
             wf=wave.open('zaznam.wav', 'rb')

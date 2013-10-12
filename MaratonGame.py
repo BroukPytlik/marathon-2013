@@ -111,8 +111,64 @@ class Microphone(pygame.sprite.Sprite):
             self.image = self.imagePl[game.ani_state]
         else:
             self.image = self.imageSt[game.ani_state]
-            
-                
+
+
+
+class Guitar(pygame.sprite.Sprite):
+    image = pygame.image.load('Enemy/Guitar/standing/1.png')
+    def __init__(self, location, *groups):
+        super(Guitar, self).__init__(*groups)
+        self.some_counting = 0
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+        #self.sound = pygame.mixer.Sound('cat.wav')
+        
+        self.imageSt = []
+        self.imagePl = []
+        
+        for i in [0,1,2]:
+            self.imageSt.append(pygame.image.load('Enemy/Guitar/standing/'+str(i+1)+'.png'))
+            self.imagePl.append(pygame.image.load('Enemy/Guitar/playing/'+str(i+1)+'.png'))
+        
+    def update(self, dt, game):
+        if self.rect.colliderect(game.player.rect.move(96,0)):
+            if game.player.fighting == True:
+                self.some_counting = 40 #time of the effect
+        
+        if self.some_counting > 1:
+            self.some_counting -=1
+            self.cooldown = 1
+            #self.sound.play()
+            self.image = self.imagePl[game.ani_state]
+        else:
+            self.image = self.imageSt[game.ani_state]            
+ 
+
+class Kitty(pygame.sprite.Sprite):
+    image = pygame.image.load('Enemy/Kitty/1.png')
+    def __init__(self, location, *groups):
+        super(Kitty, self).__init__(*groups)
+        self.some_counting = 0
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+        #self.sound = pygame.mixer.Sound('cat.wav')
+        
+        self.imageSt = []
+        
+        for i in [0,1,2]:
+            self.imageSt.append(pygame.image.load('Enemy/Kitty/'+str(i+1)+'.png'))
+        
+    def update(self, dt, game):
+        if self.rect.colliderect(game.player.rect.move(96,0)):
+            if game.player.fighting == True:
+                self.some_counting = 40 #time of the effect
+        
+        if self.some_counting > 1:
+            self.some_counting -=1
+            self.cooldown = 1
+            #self.sound.play()
+            #self.image = self.imagePl[game.ani_state]
+        else:
+            self.image = self.imageSt[game.ani_state]            
+               
         
 
 class Enemy(pygame.sprite.Sprite):
@@ -285,6 +341,22 @@ class Player(pygame.sprite.Sprite):
                 prijaty_spell = game.spell_conn.recv()
                 print prijaty_spell
                 self.caruje = False
+                #tady tedy docaroval ze? ano docaroval, takze pridame veci ze? ano pridame veci
+                if prijaty_spell == 0:
+                    Kitty((self.rect.x, self.rect.y), game.actions)
+                    
+                elif prijaty_spell == 1:
+                    Drum((self.rect.x, self.rect.y), game.actions)
+                    
+                elif prijaty_spell == 2:
+                    Microphone((self.rect.x, self.rect.y), game.actions)
+                    
+                elif prijaty_spell == 3:
+                    Guitar((self.rect.x, self.rect.y), game.actions)
+                    
+                elif prijaty_spell == 4:
+                    Trumpet((self.rect.x, self.rect.y), game.actions)
+                    
             
             if self.direction == 0:
                 self.image = self.ani_magic_l[game.ani_state]
