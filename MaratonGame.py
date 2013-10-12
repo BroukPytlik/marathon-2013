@@ -25,143 +25,64 @@ class Tardis(pygame.sprite.Sprite):
         self.image = self.imageSt[game.ani_state]
             
             
-class Trumpet(pygame.sprite.Sprite):
-    image = pygame.image.load('Enemy/Trubka/standing/1.png')
+class Object(pygame.sprite.Sprite):
+    image = None
     playing = 0
-    def __init__(self, location, *groups):
-        super(Trumpet, self).__init__(*groups)
+    def __init__(self,type, location, *groups):
+        super(Object, self).__init__(*groups)
+        
+        self.image = pygame.image.load('Enemy/'+type+'/standing/1.png')
+        
         self.some_counting = 0
         self.rect = pygame.rect.Rect(location, self.image.get_size())
-        self.sound = pygame.mixer.Sound('trumpet.wav')
+        self.sound = pygame.mixer.Sound('Enemy/'+type+'/sound.wav')
         
         self.imageSt = []
         self.imagePl = []
         
         for i in [0,1,2]:
-            self.imageSt.append(pygame.image.load('Enemy/Trubka/standing/'+str(i+1)+'.png'))
-            self.imagePl.append(pygame.image.load('Enemy/Trubka/playing/'+str(i+1)+'.png'))
+            self.imageSt.append(pygame.image.load('Enemy/'+type+'/standing/'+str(i+1)+'.png'))
+            self.imagePl.append(pygame.image.load('Enemy/'+type+'/playing/'+str(i+1)+'.png'))
         
     
     def update(self, dt, game):
         if self.playing > 0:
             self.playing -=1
-            
-        if self.rect.colliderect(game.player.rect.move(96,0)):
-            if game.player.fighting == True:
-                self.some_counting = 40 #time of the effect
-        
-        if self.some_counting > 1:
-            self.some_counting -=1
-            self.cooldown = 1
-            if self.playing == 0:
-                self.sound.play()
-                self.playing = int(self.sound.get_length()*30)
-            self.image = self.imagePl[game.ani_state]
-        else:
-            self.image = self.imageSt[game.ani_state]
-
-
-class Drum(pygame.sprite.Sprite):
-    image = pygame.image.load('Enemy/Drum/standing/1.png')
-    playing = 0
-    def __init__(self, location, *groups):
-        super(Drum, self).__init__(*groups)
-        self.some_counting = 0
-        self.rect = pygame.rect.Rect(location, self.image.get_size())
-        self.sound = pygame.mixer.Sound('drum.wav')
-        
-        self.imageSt = []
-        self.imagePl = []
-        
-        for i in [0,1,2]:
-            self.imageSt.append(pygame.image.load('Enemy/Drum/standing/'+str(i+1)+'.png'))
-            self.imagePl.append(pygame.image.load('Enemy/Drum/playing/'+str(i+1)+'.png'))
-        
-    def update(self, dt, game):
-        if self.playing > 0:
-            self.playing -=1
-            
-        if self.rect.colliderect(game.player.rect.move(96,0)):
-            if game.player.fighting == True:
-                self.some_counting = 40 #time of the effect
-        
-        if self.some_counting > 1:
-            self.some_counting -=1
-            self.cooldown = 1
-            if self.playing == 0:
-                self.sound.play()
-                self.playing = int(self.sound.get_length()*30)
             self.image = self.imagePl[game.ani_state]
         else:
             self.image = self.imageSt[game.ani_state]
             
+            if self.rect.colliderect(game.player.rect.move(96,0)):
+                if game.player.fighting == True:
+                    self.sound.play()
+                    self.playing = int(self.sound.get_length()*30)
 
-class Microphone(pygame.sprite.Sprite):
-    image = pygame.image.load('Enemy/Mikro/standing/1.png')
+
+
+class Trumpet(Object):
     def __init__(self, location, *groups):
-        super(Microphone, self).__init__(*groups)
-        self.some_counting = 0
-        self.rect = pygame.rect.Rect(location, self.image.get_size())
-        #self.sound = pygame.mixer.Sound('cat.wav')
+        super(Trumpet, self).__init__("Trubka",location,*groups)
         
-        self.imageSt = []
-        self.imagePl = []
-        
-        for i in [0,1,2]:
-            self.imageSt.append(pygame.image.load('Enemy/Mikro/standing/'+str(i+1)+'.png'))
-            self.imagePl.append(pygame.image.load('Enemy/Mikro/playing/'+str(i+1)+'.png'))
-        
-    def update(self, dt, game):
-        if self.rect.colliderect(game.player.rect.move(96,0)):
-            if game.player.fighting == True:
-                self.some_counting = 40 #time of the effect
-        
-        if self.some_counting > 1:
-            self.some_counting -=1
-            self.cooldown = 1
-            #self.sound.play()
-            self.image = self.imagePl[game.ani_state]
-        else:
-            self.image = self.imageSt[game.ani_state]
-
-
-
-class Guitar(pygame.sprite.Sprite):
-    image = pygame.image.load('Enemy/Guitar/standing/1.png')
+class Drum(Object):
     def __init__(self, location, *groups):
-        super(Guitar, self).__init__(*groups)
-        self.some_counting = 0
-        self.rect = pygame.rect.Rect(location, self.image.get_size())
-        #self.sound = pygame.mixer.Sound('cat.wav')
-        
-        self.imageSt = []
-        self.imagePl = []
-        
-        for i in [0,1,2]:
-            self.imageSt.append(pygame.image.load('Enemy/Guitar/standing/'+str(i+1)+'.png'))
-            self.imagePl.append(pygame.image.load('Enemy/Guitar/playing/'+str(i+1)+'.png'))
-        
-    def update(self, dt, game):
-        if self.rect.colliderect(game.player.rect.move(96,0)):
-            if game.player.fighting == True:
-                self.some_counting = 40 #time of the effect
-        
-        if self.some_counting > 1:
-            self.some_counting -=1
-            self.cooldown = 1
-            #self.sound.play()
-            self.image = self.imagePl[game.ani_state]
-        else:
-            self.image = self.imageSt[game.ani_state]            
- 
+        super(Drum, self).__init__("Drum",location,*groups)
 
+
+class Microphone(Object):
+    def __init__(self, location, *groups):
+        super(Microphone, self).__init__("Mikro",location,*groups)
+
+class Guitar(Object):
+    def __init__(self, location, *groups):
+        super(Guitar, self).__init__("Guitar",location,*groups) 
+       
 class Kitty(pygame.sprite.Sprite):
     image = pygame.image.load('Enemy/Kitty/1.png')
     def __init__(self, location, *groups):
         super(Kitty, self).__init__(*groups)
         self.some_counting = 0
         self.rect = pygame.rect.Rect(location, self.image.get_size())
-        #self.sound = pygame.mixer.Sound('cat.wav')
+        self.sound = pygame.mixer.Sound('Enemy/Kitty/sound.wav').play()
         
         self.imageSt = []
         
@@ -169,21 +90,10 @@ class Kitty(pygame.sprite.Sprite):
             self.imageSt.append(pygame.image.load('Enemy/Kitty/'+str(i+1)+'.png'))
         
     def update(self, dt, game):
-        if self.rect.colliderect(game.player.rect.move(96,0)):
-            if game.player.fighting == True:
-                self.some_counting = 40 #time of the effect
-        
-        if self.some_counting > 1:
-            self.some_counting -=1
-            self.cooldown = 1
-            #self.sound.play()
-            #self.image = self.imagePl[game.ani_state]
-        else:
-            self.image = self.imageSt[game.ani_state]            
-               
-        
+        self.image = self.imageSt[game.ani_state]             
 
 class Enemy(pygame.sprite.Sprite):
+
     def __init__(self, location, *groups):
         super(Enemy, self).__init__(*groups)
         self.some_counting = 0
@@ -201,7 +111,7 @@ class Enemy(pygame.sprite.Sprite):
             self.image_sing_l.append(pygame.image.load('Enemy/Cthulhu/Lsinging/'+str(i+1)+'.png'))
             self.image_sing_r.append(pygame.image.load('Enemy/Cthulhu/Rsinging/'+str(i+1)+'.png'))
 
-        self.sound = pygame.mixer.Sound('fungujici-zelena-vec.wav')
+        self.sound = pygame.mixer.Sound('Enemy/Cthulhu/sound.wav')
         self.image = self.image_walk_l[0]
         self.rect = pygame.rect.Rect(location, self.image.get_size())
         # movement in the X direction; postive is right, negative is left
@@ -209,16 +119,15 @@ class Enemy(pygame.sprite.Sprite):
         
     def update(self, dt, game):
         if self.rect.colliderect(game.player.rect.move(96,0)):
-            if game.player.fighting == True:
-                self.some_counting = 220 #time of the effect
+            if game.player.fighting == True and self.some_counting == 0:
+                self.sound.play()
+                self.some_counting = int(self.sound.get_length()*30) #time of the effect
         
         # move the enemy by 100 pixels per second in the movement direction
         self.rect.x += self.direction * 150 * dt
         
         if self.some_counting > 1:
             self.some_counting -=1
-            self.cooldown = 1
-            self.sound.play()
             if self.direction > 0:
                 self.image = self.image_sing_r[game.ani_state]
             else:
