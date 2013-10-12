@@ -70,9 +70,26 @@ class Moves (object):
           [0,0,2,0,0]
           ]
     
+    UP_RIGHT = 7
+    M_UP_RIGHT = [
+          [0,0,0,0,0],
+          [0,0,0,0,0],
+          [0,0,0,0,0],
+          [2,2,2,0,0],
+          [2,1,2,0,0]
+          ]
+    UP_LEFT  = 8
+    M_UP_LEFT = [
+          [0,0,0,0,0],
+          [0,0,0,0,0],
+          [0,0,0,0,0],
+          [0,0,2,2,2],
+          [0,0,2,1,2]
+          ]
+    
     
     def getMove(self,mat):
-        movesTable = [True,True,True,True,True,True,True]
+        movesTable = [True,True,True,True,True,True,True,True,True]
         #print mat
         for x in range(len(mat)):
             for y in range(len(mat)):
@@ -97,6 +114,12 @@ class Moves (object):
                     
                 if self.M_SPELL[x][y] != mat[y][x] and self.M_SPELL[x][y] != 2:
                     movesTable[self.SPELL] = False
+                    
+                if self.M_UP_RIGHT[x][y] != mat[y][x] and self.M_UP_RIGHT[x][y] != 2:
+                    movesTable[self.UP_RIGHT] = False
+                    
+                if self.M_UP_LEFT[x][y] != mat[y][x] and self.M_UP_LEFT[x][y] != 2:
+                    movesTable[self.UP_LEFT] = False
 
         "Now look for what move it is"
         for i in range(len(movesTable)):
@@ -177,6 +200,10 @@ class CamControl(object):
                 print "ATTACK RIGHT"
             elif mv == moves.UP:
                 print "UP"
+            elif mv == moves.UP_LEFT:
+                print "UP LEFT"
+            elif mv == moves.UP_RIGHT:
+                print "UP RIGHT"
             elif mv == moves.SPELL:
                 print "SPELL"
             
