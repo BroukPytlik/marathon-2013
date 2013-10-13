@@ -126,7 +126,7 @@ class Enemy(pygame.sprite.Sprite):
         # move the enemy by 100 pixels per second in the movement direction
         self.rect.x += self.direction * 150 * dt
         
-        if self.some_counting > 1:
+        if self.some_counting > 0:
             self.some_counting -=1
             if self.direction > 0:
                 self.image = self.image_sing_r[game.ani_state]
@@ -342,7 +342,7 @@ class Game(object):
         self.actions = tmx.SpriteLayer()
         self.tilemap.layers.append(self.actions)
         for x in self.tilemap.layers['triggers'].find('trumpet'):
-            Trumpet((x.px, x.py), self.actions)
+            Trumpet((x.px, x.py-64), self.actions)
             
         for x in self.tilemap.layers['triggers'].find('enemy'):
             Enemy((x.px, x.py), self.actions)
@@ -355,6 +355,9 @@ class Game(object):
             
         for x in self.tilemap.layers['triggers'].find('mic'):
             Microphone((x.px, x.py-64), self.actions)
+            
+        for x in self.tilemap.layers['triggers'].find('kytara'):
+            Guitar((x.px, x.py-64), self.actions)
 
         self.sprites = tmx.SpriteLayer()
         start_cell = self.tilemap.layers['triggers'].find('player')[0]

@@ -64,6 +64,11 @@
    <property name="top" value="yes"/>
   </properties>
  </tile>
+ <tile id="14">
+  <properties>
+   <property name="kytara" value="yes"/>
+  </properties>
+ </tile>
  <tile id="15">
   <properties>
    <property name="tardis" value="yes"/>
